@@ -26,7 +26,6 @@ const connections_data = new Map();
 
 //Disable the send button until connection is established.
 document.getElementById("sendButton").disabled = true;
-
 document.getElementById("pInput").value = P.toString();
 document.getElementById("gInput").value = G.toString();
 
