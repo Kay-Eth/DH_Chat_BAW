@@ -4,11 +4,15 @@ Data oddania projektu: 06.06.2023
 
 TO DO:
 
-- LiteSQL 
-- Login/Register (func)
-- Login/Register page
-- Add Encryption Methods
-
+- [x] LiteSQL 
+- [x] Login/Register (func)
+- [x] Login/Register page
+- [ ] Add Encryption Methods (JS)
+- [ ] Chat GUI revamp
+- [ ] Chat's code bullet-proffing
+- [ ] Better README
+- [ ] Report creation
+- [ ] Automated Tests
 
 
 
