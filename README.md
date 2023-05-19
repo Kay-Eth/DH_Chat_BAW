@@ -12,3 +12,8 @@ TO DO:
 
 
 
+dotnet tool install --global dotnet-ef
+
+
+
+dotnet restore
