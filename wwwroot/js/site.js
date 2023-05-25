@@ -40,16 +40,19 @@ connection.on("ReceiveEncryptedMessage", function (sender, receiver, message, en
     
     console.log(`ReceiveEncryptedMessage: ${sender} ${receiver} ${message} - validated`);
 
-    let decryptedMessage = message;
+    const decodedMessage = atob(message); // Decode message from Base64
+
+    let decryptedMessage = "";
 
     switch (encryptionMethod) {
         case "none":
+            decryptedMessage = decodedMessage;
             break; // No encryption applied
         case "xorN":
-            decryptedMessage = xorDecrypt(decryptedMessage, secret);
+            decryptedMessage = xorDecrypt(decodedMessage, secret);
             break; // Apply XOR encryption
         case "cezar":
-            decryptedMessage = caesarDecrypt(decryptedMessage, secret);
+            decryptedMessage = caesarDecrypt(decodedMessage, secret);
             break; // Apply Caesar cipher encryption
         default:
             console.error("Invalid encryption method");
@@ -61,8 +64,6 @@ connection.on("ReceiveEncryptedMessage", function (sender, receiver, message, en
     li.textContent = `${sender} says ${decryptedMessage} with key ${secret}`;
     console.log("ReceiveEncryptedMessage ended.");
 });
-
-
 
 connection.on("StartConversation", function (clientA, clientB) {
     if (clientB != document.getElementById("myIdInput").value) return;
@@ -169,7 +170,10 @@ document.getElementById("sendButton").addEventListener("click", function (event)
         if (secret == 0) return;
 
         const message = document.getElementById("messageInput").value;
-        console.log("Send encrypted message", myId, receiverId, message, encryptionMethod);
+        
+
+        console.log("Message sent", myId, receiverId, message, encryptionMethod);
+
         let encryptedMessage = "";
 
         switch (encryptionMethod) {
@@ -187,7 +191,10 @@ document.getElementById("sendButton").addEventListener("click", function (event)
                 break;
         }
 
-        connection.invoke("SendEncryptedMessage", myId, receiverId, encryptedMessage, encryptionMethod).catch(function (err) {
+        const encodedMessage = btoa(encryptedMessage);
+        console.log("Base64 encrypted message:", encodedMessage);
+
+        connection.invoke("SendEncryptedMessage", myId, receiverId, encodedMessage, encryptionMethod).catch(function (err) {
             return console.error(err.toString());
         });
     }
