@@ -6,6 +6,11 @@ namespace BawChat.Pages;
 
 public class IndexModel : PageModel
 {
+    public const string VIEW_DATA_ERROR_MSG_KEY = "error_message";
+    public const string LOGIN_FAILED_MSG = "Login attempt failed.";
+
+    public const string TEMP_DATA_REGISTER_SUCCESS_KEY = "register_success";
+
     [BindProperty]
     public string? Username { get; set; }
 
@@ -27,16 +32,33 @@ public class IndexModel : PageModel
         _logger = logger;
     }
 
+    public IActionResult OnGet()
+    {
+        if (HttpContext.User.Identity!.IsAuthenticated)
+        {
+            return Redirect("/Chat");
+        }
+        return Page();
+    }
+
     public async Task<IActionResult> OnPost()
     {
+        ViewData.Remove(VIEW_DATA_ERROR_MSG_KEY);
+
         var userDb = await _userManager.FindByNameAsync(Username!);
         if (userDb == null)
-            return BadRequest("Login attempt failed.");
-        
+        {
+            ViewData[VIEW_DATA_ERROR_MSG_KEY] = LOGIN_FAILED_MSG;
+            return Page();
+        }
+            
         var result = await _signInManager.PasswordSignInAsync(userDb, Password!, false, lockoutOnFailure: false);
         if (result.Succeeded)
             return RedirectToPage("Chat");
         else
-            return BadRequest("Login attempt failed.");
+        {
+            ViewData[VIEW_DATA_ERROR_MSG_KEY] = LOGIN_FAILED_MSG;
+            return Page();
+        }   
     }
 }
