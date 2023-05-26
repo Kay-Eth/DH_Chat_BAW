@@ -40,7 +40,7 @@ connection.on("ReceiveEncryptedMessage", function (sender, receiver, message, en
     
     console.log(`ReceiveEncryptedMessage: ${sender} ${receiver} ${message} - validated`);
 
-    const decodedMessage = atob(message); // Decode message from Base64
+    const decodedMessage = decodeMessage(message); // Decode message from Base64
 
     let decryptedMessage = "";
 
@@ -191,7 +191,7 @@ document.getElementById("sendButton").addEventListener("click", function (event)
                 break;
         }
 
-        const encodedMessage = btoa(encryptedMessage);
+        const encodedMessage = encodeMessage(encryptedMessage);
         console.log("Base64 encrypted message:", encodedMessage);
 
         connection.invoke("SendEncryptedMessage", myId, receiverId, encodedMessage, encryptionMethod).catch(function (err) {
@@ -200,6 +200,20 @@ document.getElementById("sendButton").addEventListener("click", function (event)
     }
     event.preventDefault();
 });
+
+function encodeMessage(message) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(message);
+    const base64 = btoa(String.fromCharCode(...data));
+    return base64;
+  }
+  
+  function decodeMessage(base64) {
+    const decoder = new TextDecoder();
+    const data = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    const message = decoder.decode(data);
+    return message;
+  }
 
 function xorEncrypt(message, secret) {
     const secretBytes = getSecretBytes(secret);
