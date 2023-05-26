@@ -36,7 +36,7 @@ public class IndexModel : PageModel
     {
         if (HttpContext.User.Identity!.IsAuthenticated)
         {
-            return Redirect("/Chat");
+            return Redirect("/NewChat");
         }
         return Page();
     }
@@ -54,7 +54,7 @@ public class IndexModel : PageModel
             
         var result = await _signInManager.PasswordSignInAsync(userDb, Password!, false, lockoutOnFailure: false);
         if (result.Succeeded)
-            return RedirectToPage("Chat");
+            return RedirectToPage("NewChat");
         else
         {
             ViewData[VIEW_DATA_ERROR_MSG_KEY] = LOGIN_FAILED_MSG;
