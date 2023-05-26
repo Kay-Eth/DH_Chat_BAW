@@ -29,24 +29,40 @@ document.getElementById("sendButton").disabled = true;
 document.getElementById("pInput").value = P.toString();
 document.getElementById("gInput").value = G.toString();
 
-connection.on("RecieveEncryptedMessage", function (sender, reciever, message) {
+connection.on("ReceiveEncryptedMessage", function (sender, receiver, message, encryptionMethod) {
     let secret = 0;
-
-    console.log(`RecieveEncryptedMessage: ${sender} ${reciever} ${message}`)
-
+    console.log(`ReceiveEncryptedMessage: ${sender} ${receiver} ${message} - Encryption method: ${encryptionMethod}`);
+    
     if (connections_data.has(sender)) secret = connections_data.get(sender).get("secret");
-    if (connections_data.has(reciever)) secret = connections_data.get(reciever).get("secret");
+    if (connections_data.has(receiver)) secret = connections_data.get(receiver).get("secret");
     console.log("Secret", secret);
     if (secret == 0) return;
-    console.log(`RecieveEncryptedMessage: ${sender} ${reciever} ${message} - validated`);
+    
+    console.log(`ReceiveEncryptedMessage: ${sender} ${receiver} ${message} - validated`);
+
+    const decodedMessage = atob(message); // Decode message from Base64
+
+    let decryptedMessage = "";
+
+    switch (encryptionMethod) {
+        case "none":
+            decryptedMessage = decodedMessage;
+            break; // No encryption applied
+        case "xorN":
+            decryptedMessage = xorDecrypt(decodedMessage, secret);
+            break; // Apply XOR encryption
+        case "cezar":
+            decryptedMessage = caesarDecrypt(decodedMessage, secret);
+            break; // Apply Caesar cipher encryption
+        default:
+            console.error("Invalid encryption method");
+            break;
+    }
 
     const li = document.createElement("li");
     document.getElementById("messagesList").appendChild(li);
-    // We can assign user-supplied strings to an element's textContent because it
-    // is not interpreted as markup. If you're assigning in any other way, you 
-    // should be aware of possible script injection concerns.
-    li.textContent = `${sender} says ${message} with key ${secret}`;
-    console.log("RecieveEncryptedMessage ended.");
+    li.textContent = `${sender} says ${decryptedMessage} with key ${secret}`;
+    console.log("ReceiveEncryptedMessage ended.");
 });
 
 connection.on("StartConversation", function (clientA, clientB) {
@@ -137,28 +153,131 @@ connection.start().then(function () {
 });
 
 document.getElementById("sendButton").addEventListener("click", function (event) {
-    console.log(`BUTTON CLICKED`)
+    console.log(`BUTTON CLICKED`);
     const myId = document.getElementById("myIdInput").value;
-    const recieverId = document.getElementById("recieverIdInput").value
+    const receiverId = document.getElementById("receiverIdInput").value;
+    const encryptionMethod = document.getElementById("encryptionMethods").value;
 
-    if (!connections_data.has(recieverId)) {
-        connections_data.set(recieverId, new Map([["state", 1], ["secret", 0]]))
-        connection.invoke("RequestStartConversation", myId, recieverId).catch(function (err) {
+    if (!connections_data.has(receiverId)) {
+        connections_data.set(receiverId, new Map([["state", 1], ["secret", 0]]));
+        connection.invoke("RequestStartConversation", myId, receiverId).catch(function (err) {
             return console.error(err.toString());
         });
     } else {
-        const message = document.getElementById("messageInput").value;
-        console.log("Send encrypted message", myId, recieverId, message);
+        let secret = 0;
+        if (connections_data.has(receiverId)) secret = connections_data.get(receiverId).get("secret");
+        console.log("Secret", secret);
+        if (secret == 0) return;
 
-        connection.invoke("SendEncryptedMessage", myId, recieverId, message).catch(function (err) {
+        const message = document.getElementById("messageInput").value;
+        
+
+        console.log("Message sent", myId, receiverId, message, encryptionMethod);
+
+        let encryptedMessage = "";
+
+        switch (encryptionMethod) {
+            case "none":
+                encryptedMessage = message;
+                break; // No encryption applied
+            case "xorN":
+                encryptedMessage = xorEncrypt(message, secret);
+                break; // Apply XOR encryption
+            case "cezar":
+                encryptedMessage = caesarEncrypt(message, secret);
+                break; // Apply Caesar cipher encryption
+            default:
+                console.error("Invalid encryption method");
+                break;
+        }
+
+        const encodedMessage = btoa(encryptedMessage);
+        console.log("Base64 encrypted message:", encodedMessage);
+
+        connection.invoke("SendEncryptedMessage", myId, receiverId, encodedMessage, encryptionMethod).catch(function (err) {
             return console.error(err.toString());
         });
     }
     event.preventDefault();
 });
 
-function encrypt() {
+function xorEncrypt(message, secret) {
+    const secretBytes = getSecretBytes(secret);
+    let encryptedMessage = "";
 
+    for (let i = 0; i < message.length; i++) {
+        const charCode = message.charCodeAt(i);
+        const keyByte = secretBytes[i % secretBytes.length];
+        const encryptedCharCode = charCode ^ keyByte;
+        encryptedMessage += String.fromCharCode(encryptedCharCode);
+    }
+
+    return encryptedMessage;
+}
+
+function xorDecrypt(encryptedMessage, secret) {
+    const secretBytes = getSecretBytes(secret);
+    let decryptedMessage = "";
+
+    for (let i = 0; i < encryptedMessage.length; i++) {
+        const charCode = encryptedMessage.charCodeAt(i);
+        const keyByte = secretBytes[i % secretBytes.length];
+        const decryptedCharCode = charCode ^ keyByte;
+        decryptedMessage += String.fromCharCode(decryptedCharCode);
+    }
+
+    return decryptedMessage;
+}
+
+function getSecretBytes(secret) {
+    const secretBytes = [];
+    for (let i = 0; i < 4; i++) {
+        secretBytes.push(secret & 0xFF);
+        secret = secret >> 8;
+    }
+    return secretBytes;
+}
+
+function caesarEncrypt(message, secret) {
+    const key = secret % 26;
+    let encryptedMessage = "";
+
+    for (let i = 0; i < message.length; i++) {
+        const charCode = message.charCodeAt(i);
+
+        if (charCode >= 65 && charCode <= 90) {
+            const encryptedCharCode = ((charCode - 65 + key) % 26) + 65;
+            encryptedMessage += String.fromCharCode(encryptedCharCode);
+        } else if (charCode >= 97 && charCode <= 122) {
+            const encryptedCharCode = ((charCode - 97 + key) % 26) + 97;
+            encryptedMessage += String.fromCharCode(encryptedCharCode);
+        } else {
+            encryptedMessage += message.charAt(i);
+        }
+    }
+
+    return encryptedMessage;
+}
+
+function caesarDecrypt(encryptedMessage, secret) {
+    const key = secret % 26;
+    let decryptedMessage = "";
+
+    for (let i = 0; i < encryptedMessage.length; i++) {
+        const charCode = encryptedMessage.charCodeAt(i);
+
+        if (charCode >= 65 && charCode <= 90) {
+            const decryptedCharCode = ((charCode - 65 - key + 26) % 26) + 65;
+            decryptedMessage += String.fromCharCode(decryptedCharCode);
+        } else if (charCode >= 97 && charCode <= 122) {
+            const decryptedCharCode = ((charCode - 97 - key + 26) % 26) + 97;
+            decryptedMessage += String.fromCharCode(decryptedCharCode);
+        } else {
+            decryptedMessage += encryptedMessage.charAt(i);
+        }
+    }
+
+    return decryptedMessage;
 }
 
 function getRndInteger() {

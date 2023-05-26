@@ -5,8 +5,8 @@
         <div class="col-5"><input type="text" id="myIdInput" /></div>
     </div>
     <div class="row p-1">
-        <div class="col-1">Reciever Id</div>
-        <div class="col-5"><input type="text" id="recieverIdInput" /></div>
+        <div class="col-1">Receiver Id</div>
+        <div class="col-5"><input type="text" id="receiverIdInput" /></div>
     </div>
     <div class="row p-1">
         <div class="col-1">P</div>
@@ -18,7 +18,11 @@
     </div>
     <div class="row p-1">
         <div class="col-1">Encryption Method</div>
-        <div class="col-5"><input type="text" id="encryptionMethodInput" /></div>
+        <div class="col-5"><select name="encryption" id="encryptionMethods">
+        <option value="none">None</option>
+        <option value="xorN">xorN</option>
+        <option value="cezar">Caesar cipher</option>
+        </select></div>
     </div>
     <div class="row p-1">
         <div class="col-1">Message</div>
