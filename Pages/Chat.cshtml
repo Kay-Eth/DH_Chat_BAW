@@ -1,48 +1,116 @@
-﻿@page 
+﻿@page
+@model ChatModel
+
 <div class="container">
-    <div class="row p-1">
-        <div class="col-1">My Id</div>
-        <div class="col-5"><input type="text" id="myIdInput" /></div>
-    </div>
-    <div class="row p-1">
-        <div class="col-1">Receiver Id</div>
-        <div class="col-5"><input type="text" id="receiverIdInput" /></div>
-    </div>
-    <div class="row p-1">
-        <div class="col-1">P</div>
-        <div class="col-5"><input type="text" id="pInput" /></div>
-    </div>
-    <div class="row p-1">
-        <div class="col-1">G</div>
-        <div class="col-5"><input type="text" id="gInput"  /></div>
-    </div>
-    <div class="row p-1">
-        <div class="col-1">Encryption Method</div>
-        <div class="col-5"><select name="encryption" id="encryptionMethods">
-        <option value="none">None</option>
-        <option value="xorN">xorN</option>
-        <option value="cezar">Caesar cipher</option>
-        </select></div>
-    </div>
-    <div class="row p-1">
-        <div class="col-1">Message</div>
-        <div class="col-5"><input type="text" class="w-100" id="messageInput" /></div>
-    </div>
-    <div class="row p-1">
-        <div class="col-6 text-end">
-            <input type="button" id="sendButton" value="Send Message" />
+    <div class="row">
+        <div class="col">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-3">
+                            <label for="myIdInput" class="form-label">My Id</label>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="mb-3">
+                            <input type="text" class="w-100" id="myIdInput" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-3">
+                            <label for="receiverIdInput" class="form-label">Receiver Id</label>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="mb-3">
+                            <input type="text" class="w-100" id="receiverIdInput" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-3">
+                            <label for="pInput" class="form-label">P</label>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="mb-3">
+                            <input type="text" class="w-100" id="pInput" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-3">
+                            <label for="gInput" class="form-label">G</label>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="mb-3">
+                            <input type="text" class="w-100" id="gInput" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-3">
+                            <label for="encryptionMethods" class="form-label">Encryption Method</label>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="mb-3">
+                            <select name="encryption" id="encryptionMethods" class="w-100">
+                                <option value="none">None</option>
+                                <option value="xorN">xorN</option>
+                                <option value="cezar">Caesar cipher</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div>
+                            <label for="messageInput" class="form-label">Message Input</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="mb-3">
+                            <input type="text" class="w-100" id="messageInput" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+
+                    </div>
+                    <div class="col">
+                        <div class="d-grid">
+                            <input type="button" id="sendButton" value="Send Message" />
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-    </div>
-    <div class="row p-1">
-        <div class="col-6">
-            <hr />
-        </div>
-    </div>
-    <div class="row p-1">
-        <div class="col-6">
-            <ul id="messagesList"></ul>
+        <div class="col">
+            <span>Chat history</span>
+            <div class="vh-100" style="overflow-y: scroll;height: 75vh!important;">
+                <ul id="messagesList"></ul>
+            </div>
         </div>
     </div>
 </div>
+
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
-<script src="~/js/chat.js"></script>
+<script src="~/js/site.js"></script>

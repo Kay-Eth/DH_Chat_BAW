@@ -1,22 +1,44 @@
 @page
 @model IndexModel
 
-@ViewData["Success"]
-
 <form method="post">
-    <div class="container">
-        <div class="row p-1">
-            <div class="col-1">Username</div>
-            <div class="col-5"><input type="text" asp-for="@Model.Username" /></div>
-        </div>
-        <div class="row p-1">
-            <div class="col-1">Password</div>
-            <div class="col-5"><input type="password" asp-for="@Model.Password" /></div>
-        </div>
+    <div class="container text-center">
+        <div class="row">
+            <div class="col">
+            </div>
 
-        <div class="row p-1">
-            <div class="col-6">
-                <input type="submit" id="loginButton" value="Login" />
+            <div class="col-md-auto">
+                @{
+                    if (ViewData.ContainsKey(IndexModel.VIEW_DATA_ERROR_MSG_KEY))
+                    {
+                        <p style="color: red">@ViewData[IndexModel.VIEW_DATA_ERROR_MSG_KEY]</p>
+                    }
+                }
+
+                @{
+                    if (TempData.ContainsKey(IndexModel.TEMP_DATA_REGISTER_SUCCESS_KEY))
+                    {
+                        <p style="color: rgb(54, 54, 255)">@TempData[IndexModel.TEMP_DATA_REGISTER_SUCCESS_KEY]</p>
+                    }
+                }
+
+                <div class="mb-3">
+                    <label for="Username" class="form-label">Username</label>
+                    <input class="form-control" type="text" asp-for="@Model.Username" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="Password" class="form-label">Password</label>
+                    <input class="form-control" type="password" asp-for="@Model.Password" />
+                </div>
+
+                <div class="d-grid">
+                    <input class="btn btn-primary" type="submit" id="loginButton" value="Login" />
+                </div>
+                
+            </div>
+
+            <div class="col">
             </div>
         </div>
     </div>

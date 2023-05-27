@@ -1,0 +1,32 @@
+@page
+@model NewChatModel
+
+<form method="post">
+    <div class="container text-center">
+        <div class="row">
+            <div class="col">
+            </div>
+
+            <div class="col-md-auto">
+                @{
+                    if (ViewData.ContainsKey(NewChatModel.VIEW_DATA_USER_NOT_FOUND_KEY))
+                    {
+                        <p style="color: red">@ViewData[NewChatModel.VIEW_DATA_USER_NOT_FOUND_KEY]</p>
+                    }
+                }
+
+                <div class="mb-3">
+                    <label for="ReceiverUsername" class="form-label">Receiver Username</label>
+                    <input class="form-control" type="text" asp-for="@Model.ReceiverUsername" />
+                </div>
+
+                <div class="d-grid">
+                    <input class="btn btn-primary" type="submit" id="submitButton" value="Connect" />
+                </div>
+            </div>
+
+            <div class="col">
+            </div>
+        </div>
+    </div>
+</form>
