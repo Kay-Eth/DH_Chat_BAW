@@ -13,7 +13,7 @@
                     </div>
                     <div class="col">
                         <div class="mb-3">
-                            <input type="text" class="w-100" id="myIdInput" />
+                            <input type="text" class="w-100" id="myIdInput" disabled />
                         </div>
                     </div>
                 </div>
@@ -26,33 +26,7 @@
                     </div>
                     <div class="col">
                         <div class="mb-3">
-                            <input type="text" class="w-100" id="receiverIdInput" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col">
-                        <div class="mb-3">
-                            <label for="pInput" class="form-label">P</label>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="mb-3">
-                            <input type="text" class="w-100" id="pInput" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col">
-                        <div class="mb-3">
-                            <label for="gInput" class="form-label">G</label>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="mb-3">
-                            <input type="text" class="w-100" id="gInput" />
+                            <input type="text" class="w-100" id="receiverIdInput" disabled />
                         </div>
                     </div>
                 </div>
@@ -111,6 +85,14 @@
         </div>
     </div>
 </div>
+
+<script>
+    const MY_ID = @Html.Raw(Json.Serialize(ViewData[ChatModel.VIEW_DATA_MY_ID_KEY]));
+    const RECEIVER_ID = @Html.Raw(Json.Serialize(ViewData[ChatModel.VIEW_DATA_RECEIVER_ID_KEY]));
+
+    document.getElementById("myIdInput").value = MY_ID;
+    document.getElementById("receiverIdInput").value = RECEIVER_ID;
+</script>
 
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
 <script src="~/js/site.js"></script>

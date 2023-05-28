@@ -9,9 +9,8 @@ namespace BawChat.Pages;
 [Authorize]
 public class ChatModel : PageModel
 {
-    public const string VIEW_DATA_MY_USERNAME_KEY = "my_username";
-    public const string VIEW_DATA_RECEIVER_USERNAME_KEY = "receiver_username";
-    public const string VIEW_DATA_CHAT_ID_KEY = "chat_id";
+    public const string VIEW_DATA_MY_ID_KEY = "my_id";
+    public const string VIEW_DATA_RECEIVER_ID_KEY = "receiver_id";
 
     private readonly ILogger<ChatModel> _logger;
     private readonly UserManager<IdentityUser<Guid>> _userManager;
@@ -56,7 +55,11 @@ public class ChatModel : PageModel
         else
         {
             _logger.LogInformation("Correct");
-            ViewData[VIEW_DATA_CHAT_ID_KEY] = "Kopytko";
+
+            var myUser = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name!);
+            
+            ViewData[VIEW_DATA_MY_ID_KEY] = myUser!.Id;
+            ViewData[VIEW_DATA_RECEIVER_ID_KEY] = result.Id.ToString();
             return Page();
         }
     }

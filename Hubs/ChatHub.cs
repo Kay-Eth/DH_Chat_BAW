@@ -1,48 +1,45 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace BawChat.Hubs
 {
+    [Authorize]
     public class ChatHub : Hub
     {
-        public async Task SendMessage(string user, string message)
+        public async Task Ping(string clientA)
         {
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
+            Console.WriteLine($"Ping {clientA}");
+            await Clients.User(clientA).SendAsync("Ping", clientA, Context.UserIdentifier);
         }
 
-        public async Task RequestStartConversation(string sender, string receiver)
+        public async Task RequestStartConversation(string clientA, string clientB)
         {
-            await Clients.All.SendAsync("StartConversation", sender, receiver);
-            Console.WriteLine($"RequestStartConversation {sender} {receiver}");
+            await Clients.User(clientB).SendAsync("StartConversation", clientA, clientB);
+            Console.WriteLine($"RequestStartConversation {clientA} {clientB}");
         }
 
-        public async Task SendPG(string sender, string receiver, string p, int g)
+        public async Task SendA(string clientA, string clientB, string A)
         {
-            await Clients.All.SendAsync("RecievePG", sender, receiver, p, g);
-            Console.WriteLine($"SendPG {sender} {receiver} {p} {g}");
+            Console.WriteLine($"RecieveA {clientA} {clientB} {A}");
+            await Clients.User(clientB).SendAsync("RecieveA", clientA, clientB, A);
         }
 
-        public async Task SendA(string sender, string receiver, string A)
+        public async Task SendB(string clientA, string clientB, string B)
         {
-            Console.WriteLine($"RecieveA {sender} {receiver} {A}");
-            await Clients.All.SendAsync("RecieveA", sender, receiver, A);
-        }
-
-        public async Task SendB(string sender, string receiver, string B)
-        {
-            Console.WriteLine($"RecieveB {sender} {receiver} {B}");
-            await Clients.All.SendAsync("RecieveB", sender, receiver, B);
-        }
-
-        public async Task SetEncryption(string sender, string receiver, string method)
-        {
-            await Clients.All.SendAsync("RequestEncryption", sender, receiver, method);
+            Console.WriteLine($"RecieveB {clientA} {clientB} {B}");
+            await Clients.User(clientA).SendAsync("RecieveB", clientA, clientB, B);
         }
 
         public async Task SendEncryptedMessage(string sender, string receiver, string encryptedMessage, string encryptionMethod)
         {
             Console.WriteLine($"SendEncryptedMessage {sender} {receiver} {encryptedMessage} {encryptionMethod}");
-            await Clients.All.SendAsync("ReceiveEncryptedMessage", sender, receiver, encryptedMessage, encryptionMethod);
+            await Clients.User(sender).SendAsync("ReceiveEncryptedMessage", sender, receiver, encryptedMessage, encryptionMethod);
+            await Clients.User(receiver).SendAsync("ReceiveEncryptedMessage", sender, receiver, encryptedMessage, encryptionMethod);
         }
 
+        public async Task SendReadyToTalk(string sender, string receiver)
+        {
+            await Clients.User(receiver).SendAsync("ReceiveReadyToTalk", sender);
+        }
     }
 }
