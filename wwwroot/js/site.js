@@ -9,34 +9,65 @@ const G = 2;
 const MIN_RNG = 1000;
 const MAX_RNG = 2000;
 
-const connections_data = new Map();
-// {
-//     // "Maciek": {
-//     //     "state": 0,
-//     //     "secret": 0
-//     // },
-//     // "Kasia": {
-//     //     "state": 0,
-//     //     "secret": 0
-//     // },
-//     // "Pioterk": {
-//     //     "state": 0,
-//     //     "secret": 0
-//     // },
-// }
+let numA = BigInt(0);
+let numB = BigInt(0);
+let rand_num = BigInt(0);
+let secret = BigInt(0);
 
 //Disable the send button until connection is established.
 document.getElementById("sendButton").disabled = true;
 
+function clientACheck(clientA, clientB) {
+    console.log("clientACheck", clientA, clientB);
+    if (clientB != RECEIVER_ID) return false;
+    if (clientA != MY_ID) return false;
+    console.log("clientACheck TRUE");
+    return true;
+}
+
+function clientBCheck(clientA, clientB) {
+    console.log("clientBCheck", clientA, clientB);
+    if (clientA != RECEIVER_ID) return false;
+    if (clientB != MY_ID) return false;
+    console.log("clientBCheck TRUE");
+    return true;
+}
+
+// CLIENT A
+connection.on("Ping", function (clientA, clientB) {
+    console.log(`Received Ping: ${clientA} ${clientB}`);
+    if (!clientACheck(clientA, clientB)) return;
+
+    // const encryptionMethod = document.getElementById("encryptionMethods").value;
+
+    connection.invoke("RequestStartConversation", MY_ID, RECEIVER_ID).catch(function (err) {
+        return console.error(err.toString());
+    });
+
+    rand_num = BigInt(getRndInteger());
+
+    numA = (BigInt(G) ** BigInt(rand_num)) % BigInt(P);
+    console.log("rand_num: ", rand_num);
+    console.log("numA: ", numA);
+
+    connection.invoke("SendA", MY_ID, RECEIVER_ID, numA.toString()).catch(function (err) {
+        return console.error(err.toString());
+    });
+});
+
+// BOTH CLIENTS
 connection.on("ReceiveEncryptedMessage", function (sender, receiver, message, encryptionMethod) {
-    let secret = 0;
+    if (
+        !(
+            (sender == MY_ID && receiver == RECEIVER_ID)
+            ||
+            (sender == RECEIVER_ID && receiver == MY_ID)
+        )
+    ) return;
+    
     console.log(`ReceiveEncryptedMessage: ${sender} ${receiver} ${message} - Encryption method: ${encryptionMethod}`);
-    
-    if (connections_data.has(sender)) secret = connections_data.get(sender).get("secret");
-    if (connections_data.has(receiver)) secret = connections_data.get(receiver).get("secret");
     console.log("Secret", secret);
-    if (secret == 0) return;
-    
+    if (secret == BigInt(0)) return;
     console.log(`ReceiveEncryptedMessage: ${sender} ${receiver} ${message} - validated`);
 
     const decodedMessage = decodeMessage(message); // Decode message from Base64
@@ -64,19 +95,18 @@ connection.on("ReceiveEncryptedMessage", function (sender, receiver, message, en
     console.log("ReceiveEncryptedMessage ended.");
 });
 
+// CLIENT B
 connection.on("StartConversation", function (clientA, clientB) {
-    if (clientB != document.getElementById("myIdInput").value) return;
-    if (connections_data.has(clientA)) return;
+    if (!clientBCheck(clientA, clientB)) return;
+
     console.log(`StartConversation: ${clientA} ${clientB}`);
 
-    connections_data.set(clientA, new Map([["state", 1], ["secret", 0]]));
 
-    const secret = getRndInteger();
-    connections_data.set(clientA, new Map([["state", 2], ["secret", secret]]));
+    rand_num = BigInt(getRndInteger());
     
-    const numB = (BigInt(G) ** BigInt(secret)) % BigInt(P);
-    console.log("Secret: ", secret);
-    console.log("NumB: ", numB);
+    numB = (BigInt(G) ** BigInt(rand_num)) % BigInt(P);
+    console.log("rand_num: ", rand_num);
+    console.log("numB: ", numB);
 
     connection.invoke("SendB", clientA, clientB, numB.toString()).catch(function (err) {
         return console.error(err.toString());
@@ -84,96 +114,86 @@ connection.on("StartConversation", function (clientA, clientB) {
     console.log("StartConversation ended.");
 });
 
-connection.on("RecieveA", function (clientA, clientB, numA) {
-    if (clientB != document.getElementById("myIdInput").value) return;
-    if (clientA == document.getElementById("myIdInput").value) return;
-    if (!connections_data.has(clientA)) return;
-    // Add additional checks
-    console.log(`RecieveA: ${clientA} ${clientB} ${numA}`)
+// CLIENT B
+connection.on("RecieveA", function (clientA, clientB, new_numA) {
+    if (!clientBCheck(clientA, clientB)) return;
+    console.log(`RecieveA: ${clientA} ${clientB} ${new_numA}`);
+    numA = new_numA;
 
-    const secret = BigInt(numA) ** BigInt(connections_data.get(clientA).get("secret")) % BigInt(P);
+    secret = BigInt(numA) ** BigInt(rand_num) % BigInt(P);
     console.log("True Secret", secret);
 
-    connections_data.set(
-        clientA, new Map([
-            ["state", 3],
-            ["secret", secret.toString()]
-        ])
-    )
-    console.log("RecieveA ended.")
+    connection.invoke("SendReadyToTalk", MY_ID, RECEIVER_ID);
+
+    console.log("RecieveA ended.");
 });
 
-connection.on("RecieveB", function (clientA, clientB, numB) {
-    if (clientA != document.getElementById("myIdInput").value) return;
-    if (clientB == document.getElementById("myIdInput").value) return;
-    if (!connections_data.has(clientB)) return;
-    // Add additional checks
-    console.log(`RecieveB: ${clientA} ${clientB} ${numB}`)
+// CLIENT A
+connection.on("RecieveB", function (clientA, clientB, new_numB) {
+    if (!clientACheck(clientA, clientB)) return;
+    console.log(`RecieveB: ${clientA} ${clientB} ${new_numB}`);
+    numB = new_numB;
 
-    const secret = BigInt(numB) ** BigInt(connections_data.get(clientB).get("secret")) % BigInt(P);
+    secret = BigInt(numB) ** BigInt(rand_num) % BigInt(P);
     console.log("True Secret", secret);
 
-    connections_data.set(
-        clientB, new Map([
-            ["state", 3],
-            ["secret", secret.toString()]
-        ])
-    )
-    console.log("RecieveB ended.")
+    connection.invoke("SendReadyToTalk", MY_ID, RECEIVER_ID);
+
+    console.log("RecieveB ended.");
+});
+
+// BOTH CLIENTS
+connection.on("ReceiveReadyToTalk", function (sender) {
+    if (sender != RECEIVER_ID) return;
+
+    document.getElementById("sendButton").disabled = false;
+
+    console.log("ReceiveReadyToTalk ended.");
 });
 
 connection.start().then(function () {
-    document.getElementById("sendButton").disabled = false;
+    connection.invoke("Ping", RECEIVER_ID).catch(function (err) {
+        return console.error(err.toString());
+    });
 }).catch(function (err) {
     return console.error(err.toString());
 });
 
 document.getElementById("sendButton").addEventListener("click", function (event) {
     console.log(`BUTTON CLICKED`);
-    const myId = document.getElementById("myIdInput").value;
-    const receiverId = document.getElementById("receiverIdInput").value;
     const encryptionMethod = document.getElementById("encryptionMethods").value;
 
-    if (!connections_data.has(receiverId)) {
-        connections_data.set(receiverId, new Map([["state", 1], ["secret", 0]]));
-        connection.invoke("RequestStartConversation", myId, receiverId).catch(function (err) {
-            return console.error(err.toString());
-        });
-    } else {
-        let secret = 0;
-        if (connections_data.has(receiverId)) secret = connections_data.get(receiverId).get("secret");
-        console.log("Secret", secret);
-        if (secret == 0) return;
+    if (secret == BigInt(0)) return;
 
-        const message = document.getElementById("messageInput").value;
-        
+    const message = document.getElementById("messageInput").value;
 
-        console.log("Message sent", myId, receiverId, message, encryptionMethod);
+    console.log("Sending message: ", MY_ID, RECEIVER_ID, message, encryptionMethod);
 
-        let encryptedMessage = "";
+    let encryptedMessage = "";
 
-        switch (encryptionMethod) {
-            case "none":
-                encryptedMessage = message;
-                break; // No encryption applied
-            case "xorN":
-                encryptedMessage = xorEncrypt(message, secret);
-                break; // Apply XOR encryption
-            case "cezar":
-                encryptedMessage = caesarEncrypt(message, secret);
-                break; // Apply Caesar cipher encryption
-            default:
-                console.error("Invalid encryption method");
-                break;
-        }
-
-        const encodedMessage = encodeMessage(encryptedMessage);
-        console.log("Base64 encrypted message:", encodedMessage);
-
-        connection.invoke("SendEncryptedMessage", myId, receiverId, encodedMessage, encryptionMethod).catch(function (err) {
-            return console.error(err.toString());
-        });
+    switch (encryptionMethod) {
+        case "none":
+            encryptedMessage = message;
+            break; // No encryption applied
+        case "xorN":
+            encryptedMessage = xorEncrypt(message, secret);
+            break; // Apply XOR encryption
+        case "cezar":
+            encryptedMessage = caesarEncrypt(message, secret);
+            break; // Apply Caesar cipher encryption
+        default:
+            console.error("Invalid encryption method");
+            break;
     }
+
+    const encodedMessage = encodeMessage(encryptedMessage);
+    console.log("Base64 encrypted message:", encodedMessage);
+
+    connection.invoke("SendEncryptedMessage", MY_ID, RECEIVER_ID, encodedMessage, encryptionMethod).catch(function (err) {
+        return console.error(err.toString());
+    });
+
+    console.log("Message sent: ", MY_ID, RECEIVER_ID, message, encryptionMethod);
     event.preventDefault();
 });
 
@@ -222,14 +242,14 @@ function xorDecrypt(encryptedMessage, secret) {
 function getSecretBytes(secret) {
     const secretBytes = [];
     for (let i = 0; i < 4; i++) {
-        secretBytes.push(secret & 0xFF);
-        secret = secret >> 8;
+        secretBytes.push(Number(secret & BigInt(0xFF)));
+        secret = secret >> BigInt(8);
     }
     return secretBytes;
 }
 
 function caesarEncrypt(message, secret) {
-    const key = secret % 26;
+    const key = Number(secret % BigInt(26));
     let encryptedMessage = "";
 
     for (let i = 0; i < message.length; i++) {
@@ -250,7 +270,7 @@ function caesarEncrypt(message, secret) {
 }
 
 function caesarDecrypt(encryptedMessage, secret) {
-    const key = secret % 26;
+    const key = Number(secret % BigInt(26));
     let decryptedMessage = "";
 
     for (let i = 0; i < encryptedMessage.length; i++) {
