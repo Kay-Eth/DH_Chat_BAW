@@ -30,7 +30,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="row">
                     <div class="col">
                         <div class="mb-3">
@@ -85,6 +85,10 @@
         </div>
     </div>
 </div>
+
+<script>
+    const RECEIVER_ID = @Html.Raw(Json.Serialize(ViewData[ChatModel.VIEW_DATA_RECEIVER_USERNAME_KEY]));
+</script>
 
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
 <script src="~/js/site.js"></script>

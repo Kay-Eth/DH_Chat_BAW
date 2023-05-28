@@ -6,8 +6,8 @@ const connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build(
 const P = 5809605995369958062791915965639201402176612226902900533702900882779736177890990861472094774477339581147373410185646378328043729800750470098210924487866935059164371588168047540943981644516632755067501626434556398193186628990071248660819361205119793693985433297036118232914410171876807536457391277857011849897410207519105333355801121109356897459426271845471397952675959440793493071628394122780510124618488232602464649876850458861245784240929258426287699705312584509625419513463605155428017165714465363094021609290561084025893662561222573202082865797821865270991145082200656978177192827024538990239969175546190770645685893438011714430426409338676314743571154537142031573004276428701433036381801705308659830751190352946025482059931306571004727362479688415574702596946457770284148435989129632853918392117997472632693078113129886487399347796982772784615865232621289656944284216824611318709764535152507354116344703769998514148343807n;
 const G = 2;
 
-const MIN_RNG = 15;
-const MAX_RNG = 200;
+const MIN_RNG = 1000;
+const MAX_RNG = 2000;
 
 const connections_data = new Map();
 // {
@@ -70,9 +70,6 @@ connection.on("StartConversation", function (clientA, clientB) {
     console.log(`StartConversation: ${clientA} ${clientB}`);
 
     connections_data.set(clientA, new Map([["state", 1], ["secret", 0]]));
-    connection.invoke("SendPG", clientA, clientB, P.toString(), G).catch(function (err) {
-        return console.error(err.toString());
-    });
 
     const secret = getRndInteger();
     connections_data.set(clientA, new Map([["state", 2], ["secret", secret]]));
@@ -85,26 +82,6 @@ connection.on("StartConversation", function (clientA, clientB) {
         return console.error(err.toString());
     });
     console.log("StartConversation ended.");
-});
-
-connection.on("RecievePG", function (clientA, clientB, p, g) {
-    if (clientA != document.getElementById("myIdInput").value) return;
-    if (clientB == document.getElementById("myIdInput").value) return;
-    if (!connections_data.has(clientB)) return;
-    // Add additional checks
-    console.log(`RecievePG: ${clientA} ${clientB} ${p} ${g}`);
-
-    const secret = getRndInteger();
-    connections_data.set(clientB, new Map([["state", 2], ["secret", secret]]));
-    
-    const numA = (BigInt(G) ** BigInt(secret)) % BigInt(P);
-    console.log("Secret: ", secret);
-    console.log("NumA: ", numA);
-
-    connection.invoke("SendA", clientA, clientB, numA.toString()).catch(function (err) {
-        return console.error(err.toString());
-    });
-    console.log("RecievePG ended.");
 });
 
 connection.on("RecieveA", function (clientA, clientB, numA) {

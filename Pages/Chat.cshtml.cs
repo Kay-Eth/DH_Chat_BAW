@@ -56,7 +56,8 @@ public class ChatModel : PageModel
         else
         {
             _logger.LogInformation("Correct");
-            ViewData[VIEW_DATA_CHAT_ID_KEY] = "Kopytko";
+            
+            ViewData[VIEW_DATA_RECEIVER_USERNAME_KEY] = result.Id.ToString();
             return Page();
         }
     }

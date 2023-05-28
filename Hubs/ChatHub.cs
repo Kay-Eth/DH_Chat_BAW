@@ -1,9 +1,17 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace BawChat.Hubs
 {
+    [Authorize]
     public class ChatHub : Hub
     {
+        // public async Task TestMessage(string receiver)
+        // {
+        //     Console.WriteLine($"{receiver} kopytko");
+        //     await Clients.User(receiver).SendAsync("ReceiveTestMessage", "This is a test message!");
+        // }
+
         public async Task SendMessage(string user, string message)
         {
             await Clients.All.SendAsync("ReceiveMessage", user, message);
@@ -13,12 +21,6 @@ namespace BawChat.Hubs
         {
             await Clients.All.SendAsync("StartConversation", sender, receiver);
             Console.WriteLine($"RequestStartConversation {sender} {receiver}");
-        }
-
-        public async Task SendPG(string sender, string receiver, string p, int g)
-        {
-            await Clients.All.SendAsync("RecievePG", sender, receiver, p, g);
-            Console.WriteLine($"SendPG {sender} {receiver} {p} {g}");
         }
 
         public async Task SendA(string sender, string receiver, string A)
