@@ -1,5 +1,7 @@
 ﻿"use strict";
 
+import * as encryption_lib from "./encryption.js";
+
 const connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 
 // https://www.ietf.org/rfc/rfc3526.txt
@@ -70,7 +72,7 @@ connection.on("ReceiveEncryptedMessage", function (sender, receiver, message, en
     if (secret == BigInt(0)) return;
     console.log(`ReceiveEncryptedMessage: ${sender} ${receiver} ${message} - validated`);
 
-    const decodedMessage = decodeMessage(message); // Decode message from Base64
+    const decodedMessage = encryption_lib.decodeMessage(message); // Decode message from Base64
 
     let decryptedMessage = "";
 
@@ -79,10 +81,10 @@ connection.on("ReceiveEncryptedMessage", function (sender, receiver, message, en
             decryptedMessage = decodedMessage;
             break; // No encryption applied
         case "xorN":
-            decryptedMessage = xorDecrypt(decodedMessage, secret);
+            decryptedMessage = encryption_lib.xorDecrypt(decodedMessage, secret);
             break; // Apply XOR encryption
         case "cezar":
-            decryptedMessage = caesarDecrypt(decodedMessage, secret);
+            decryptedMessage = encryption_lib.caesarDecrypt(decodedMessage, secret);
             break; // Apply Caesar cipher encryption
         default:
             console.error("Invalid encryption method");
@@ -176,17 +178,17 @@ document.getElementById("sendButton").addEventListener("click", function (event)
             encryptedMessage = message;
             break; // No encryption applied
         case "xorN":
-            encryptedMessage = xorEncrypt(message, secret);
+            encryptedMessage = encryption_lib.xorEncrypt(message, secret);
             break; // Apply XOR encryption
         case "cezar":
-            encryptedMessage = caesarEncrypt(message, secret);
+            encryptedMessage = encryption_lib.caesarEncrypt(message, secret);
             break; // Apply Caesar cipher encryption
         default:
             console.error("Invalid encryption method");
             break;
     }
 
-    const encodedMessage = encodeMessage(encryptedMessage);
+    const encodedMessage = encryption_lib.encodeMessage(encryptedMessage);
     console.log("Base64 encrypted message:", encodedMessage);
 
     connection.invoke("SendEncryptedMessage", MY_ID, RECEIVER_ID, encodedMessage, encryptionMethod).catch(function (err) {
@@ -196,99 +198,6 @@ document.getElementById("sendButton").addEventListener("click", function (event)
     console.log("Message sent: ", MY_ID, RECEIVER_ID, message, encryptionMethod);
     event.preventDefault();
 });
-
-function encodeMessage(message) {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(message);
-    const base64 = btoa(String.fromCharCode(...data));
-    return base64;
-  }
-  
-  function decodeMessage(base64) {
-    const decoder = new TextDecoder();
-    const data = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
-    const message = decoder.decode(data);
-    return message;
-  }
-
-function xorEncrypt(message, secret) {
-    const secretBytes = getSecretBytes(secret);
-    let encryptedMessage = "";
-
-    for (let i = 0; i < message.length; i++) {
-        const charCode = message.charCodeAt(i);
-        const keyByte = secretBytes[i % secretBytes.length];
-        const encryptedCharCode = charCode ^ keyByte;
-        encryptedMessage += String.fromCharCode(encryptedCharCode);
-    }
-
-    return encryptedMessage;
-}
-
-function xorDecrypt(encryptedMessage, secret) {
-    const secretBytes = getSecretBytes(secret);
-    let decryptedMessage = "";
-
-    for (let i = 0; i < encryptedMessage.length; i++) {
-        const charCode = encryptedMessage.charCodeAt(i);
-        const keyByte = secretBytes[i % secretBytes.length];
-        const decryptedCharCode = charCode ^ keyByte;
-        decryptedMessage += String.fromCharCode(decryptedCharCode);
-    }
-
-    return decryptedMessage;
-}
-
-function getSecretBytes(secret) {
-    const secretBytes = [];
-    for (let i = 0; i < 4; i++) {
-        secretBytes.push(Number(secret & BigInt(0xFF)));
-        secret = secret >> BigInt(8);
-    }
-    return secretBytes;
-}
-
-function caesarEncrypt(message, secret) {
-    const key = Number(secret % BigInt(26));
-    let encryptedMessage = "";
-
-    for (let i = 0; i < message.length; i++) {
-        const charCode = message.charCodeAt(i);
-
-        if (charCode >= 65 && charCode <= 90) {
-            const encryptedCharCode = ((charCode - 65 + key) % 26) + 65;
-            encryptedMessage += String.fromCharCode(encryptedCharCode);
-        } else if (charCode >= 97 && charCode <= 122) {
-            const encryptedCharCode = ((charCode - 97 + key) % 26) + 97;
-            encryptedMessage += String.fromCharCode(encryptedCharCode);
-        } else {
-            encryptedMessage += message.charAt(i);
-        }
-    }
-
-    return encryptedMessage;
-}
-
-function caesarDecrypt(encryptedMessage, secret) {
-    const key = Number(secret % BigInt(26));
-    let decryptedMessage = "";
-
-    for (let i = 0; i < encryptedMessage.length; i++) {
-        const charCode = encryptedMessage.charCodeAt(i);
-
-        if (charCode >= 65 && charCode <= 90) {
-            const decryptedCharCode = ((charCode - 65 - key + 26) % 26) + 65;
-            decryptedMessage += String.fromCharCode(decryptedCharCode);
-        } else if (charCode >= 97 && charCode <= 122) {
-            const decryptedCharCode = ((charCode - 97 - key + 26) % 26) + 97;
-            decryptedMessage += String.fromCharCode(decryptedCharCode);
-        } else {
-            decryptedMessage += encryptedMessage.charAt(i);
-        }
-    }
-
-    return decryptedMessage;
-}
 
 function getRndInteger() {
     return Math.floor(Math.random() * (MAX_RNG - MIN_RNG)) + MIN_RNG;
