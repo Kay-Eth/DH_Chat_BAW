@@ -27,35 +27,22 @@ public class ChatModel : PageModel
 
     public async Task<IActionResult> OnGet()
     {
-        _logger.LogInformation("Start");
-
         if (!HttpContext.User.Identity!.IsAuthenticated)
-        {
-            
             return Redirect("/Front/Index");
-        }
-
-        _logger.LogInformation("Test");
 
         object? receiverUsernameObj;
         if (!TempData.TryGetValue(NewChatModel.TEMP_DATA_RECEIVER_USER_NAME_KEY, out receiverUsernameObj))
-        {
-            _logger.LogInformation("Temp Empty");
             return RedirectToPage("NewChat");
-        }
         string receiverUsername = receiverUsernameObj as string ?? "";
-        _logger.LogInformation(receiverUsername);
 
         var result = await _userManager.FindByNameAsync(receiverUsername);
         if (result == null)
         {
-            _logger.LogInformation("Redirect");
+            _logger.LogWarning("Invalid username: {ReceiverUsername}", receiverUsername);
             return RedirectToPage("NewChat");
         }
         else
         {
-            _logger.LogInformation("Correct");
-
             var myUser = await _userManager.FindByNameAsync(HttpContext.User.Identity.Name!);
             
             ViewData[VIEW_DATA_MY_ID_KEY] = myUser!.Id;

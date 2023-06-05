@@ -1,4 +1,13 @@
+"use strict";
 
+// encryption.js - library providing encoding and encryption functionality
+
+/**
+ * Encodes a message in Base64
+ * @function
+ * @param {string} message text to encode
+ * @returns {string} encoded message
+ */
 export function encodeMessage(message) {
     const encoder = new TextEncoder();
     const data = encoder.encode(message);
@@ -6,6 +15,12 @@ export function encodeMessage(message) {
     return base64;
   }
   
+/**
+ * Decodes a message from Base64
+ * @function
+ * @param {string} base64 text to decode
+ * @returns {string} decoded message
+ */
 export function decodeMessage(base64) {
     const decoder = new TextDecoder();
     const data = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
@@ -13,6 +28,13 @@ export function decodeMessage(base64) {
     return message;
 }
 
+/**
+ * Encrypts a message using XOR method
+ * @function
+ * @param {string} message text to encrypt
+ * @param {BigInt} secret secret key
+ * @returns {string} encrypted message
+ */
 export function xorEncrypt(message, secret) {
     const secretBytes = getSecretBytes(secret);
     let encryptedMessage = "";
@@ -27,6 +49,13 @@ export function xorEncrypt(message, secret) {
     return encryptedMessage;
 }
 
+/**
+ * Decrypts a message using XOR method
+ * @function
+ * @param {string} message text to decrypt
+ * @param {BigInt} secret secret key
+ * @returns {string} decrypted message
+ */
 export function xorDecrypt(encryptedMessage, secret) {
     const secretBytes = getSecretBytes(secret);
     let decryptedMessage = "";
@@ -41,6 +70,12 @@ export function xorDecrypt(encryptedMessage, secret) {
     return decryptedMessage;
 }
 
+/**
+ * Transforms secret to an array for XOR encryption/decryption
+ * @function
+ * @param {BigInt} secret secret key
+ * @returns {string} decrypted message
+ */
 function getSecretBytes(secret) {
     const secretBytes = [];
     for (let i = 0; i < 4; i++) {
@@ -50,6 +85,13 @@ function getSecretBytes(secret) {
     return secretBytes;
 }
 
+/**
+ * Encrypts a message using Caesar method
+ * @function
+ * @param {string} message text to encrypt
+ * @param {BigInt} secret secret key
+ * @returns {string} encrypted message
+ */
 export function caesarEncrypt(message, secret) {
     const key = Number(secret % BigInt(26));
     let encryptedMessage = "";
@@ -71,6 +113,13 @@ export function caesarEncrypt(message, secret) {
     return encryptedMessage;
 }
 
+/**
+ * Decrypts a message using Caesar method
+ * @function
+ * @param {string} message text to decrypt
+ * @param {BigInt} secret secret key
+ * @returns {string} decrypted message
+ */
 export function caesarDecrypt(encryptedMessage, secret) {
     const key = Number(secret % BigInt(26));
     let decryptedMessage = "";

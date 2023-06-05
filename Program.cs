@@ -1,10 +1,7 @@
 using BawChat.Hubs;
 using BawChat.Data;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,8 +10,6 @@ builder.Services.AddDbContext<ChatDbContext>(
     dbContextOptions => dbContextOptions.UseSqlite(
         builder.Configuration.GetConnectionString("Database")
     )
-    .EnableDetailedErrors()
-    .EnableSensitiveDataLogging()
 );
 
 builder.Services.AddIdentity<IdentityUser<Guid>, IdentityRole<Guid>>(opt =>

@@ -43,12 +43,12 @@ public class NewChatModel : PageModel
             var result = await _userManager.FindByNameAsync(ReceiverUsername);
             if (result == null)
             {
+                _logger.LogWarning("Invalid username: {ReceiverUsername}", ReceiverUsername);
                 ViewData[VIEW_DATA_USER_NOT_FOUND_KEY] = VIEW_DATA_USER_NOT_FOUND_MSG;
                 return Page();
             }
             else
             {
-                _logger.LogInformation("Test");
                 TempData[TEMP_DATA_RECEIVER_USER_NAME_KEY] = ReceiverUsername;
                 return RedirectToPage("Chat");
             }
