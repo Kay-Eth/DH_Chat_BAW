@@ -105,6 +105,9 @@ export function caesarEncrypt(message, secret) {
         } else if (charCode >= 97 && charCode <= 122) {
             const encryptedCharCode = ((charCode - 97 + key) % 26) + 97;
             encryptedMessage += String.fromCharCode(encryptedCharCode);
+        } else if (charCode >= 261 && charCode <= 380) { // Polish characters: ąćęłńóśźż
+            const encryptedCharCode = ((charCode - 261 + key) % 120) + 261;
+            encryptedMessage += String.fromCharCode(encryptedCharCode);
         } else {
             encryptedMessage += message.charAt(i);
         }
@@ -132,6 +135,9 @@ export function caesarDecrypt(encryptedMessage, secret) {
             decryptedMessage += String.fromCharCode(decryptedCharCode);
         } else if (charCode >= 97 && charCode <= 122) {
             const decryptedCharCode = ((charCode - 97 - key + 26) % 26) + 97;
+            decryptedMessage += String.fromCharCode(decryptedCharCode);
+        } else if (charCode >= 261 && charCode <= 380) { // Polish characters: ąćęłńóśźż
+            const decryptedCharCode = ((charCode - 261 - key + 120) % 120) + 261;
             decryptedMessage += String.fromCharCode(decryptedCharCode);
         } else {
             decryptedMessage += encryptedMessage.charAt(i);
