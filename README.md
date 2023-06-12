@@ -45,3 +45,18 @@ Po zalogowaniu, użytkownik zostanie przeniesiony na stronę `NewChat`. Po wprow
 ## Czat
 
 Na stronie `Chat` można przeprowadzać rozmowę między użytkownikami. Po dołączeniu do czatu przycisk `Send Message` jest zablokowany do momentu połączenia z odbiorcą. Za pomocą listy `Encryption Method` użytkownik może wybrać sposób szyfrowania wiadomości. Domyślnie ustawiony jest `None`, czyli brak szyfrowania.
+
+# Środowisko testowe
+
+## Wymagania systemowe
+Do uruchomienia środowiska testowego wymagane jest:
+- zainstalowanie frameworku node.js w wersji v18.14.1 lub wyższym
+
+## Instalacja
+1. Otwórz wiersz poleceń/terminal w folderze z plikami projektu
+2. Wykonaj następujące polecenia:
+    - `npm install --save-dev @babel/core @babel/preset-env jest`
+
+## Uruchomienie
+Aby uruchomić testy wykonaj polecenie `npx jest JavaScriptTests.spec.js`
+

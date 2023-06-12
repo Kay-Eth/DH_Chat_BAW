@@ -4,3 +4,4 @@ obj
 local_database.db
 local_database.db-shm
 local_database.db-wal
+node_modules
