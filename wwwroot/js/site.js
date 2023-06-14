@@ -110,7 +110,10 @@ connection.on("ReceiveEncryptedMessage", function (sender, receiver, message, en
 
     const li = document.createElement("li");
     document.getElementById("messagesList").appendChild(li);
-    li.textContent = `${sender} says ${decryptedMessage}`;
+
+    const sender_username = USERNAMES[sender]
+
+    li.textContent = `${sender_username} says ${decryptedMessage}`;
     console.log("ReceiveEncryptedMessage ended.");
 });
 

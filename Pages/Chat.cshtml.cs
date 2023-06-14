@@ -12,6 +12,9 @@ public class ChatModel : PageModel
     public const string VIEW_DATA_MY_ID_KEY = "my_id";
     public const string VIEW_DATA_RECEIVER_ID_KEY = "receiver_id";
 
+    public const string VIEW_DATA_MY_USERNAME_KEY = "my_username";
+    public const string VIEW_DATA_RECEIVER_USERNAME_KEY = "receiver_username";
+
     private readonly ILogger<ChatModel> _logger;
     private readonly UserManager<IdentityUser<Guid>> _userManager;
 
@@ -47,6 +50,10 @@ public class ChatModel : PageModel
             
             ViewData[VIEW_DATA_MY_ID_KEY] = myUser!.Id;
             ViewData[VIEW_DATA_RECEIVER_ID_KEY] = result.Id.ToString();
+
+            ViewData[VIEW_DATA_MY_USERNAME_KEY] = myUser!.UserName;
+            ViewData[VIEW_DATA_RECEIVER_USERNAME_KEY] = result.UserName;
+
             return Page();
         }
     }
